@@ -1,0 +1,5 @@
+*.log
+.AppleDouble/*
+node_modules/*
+nohup.out
+

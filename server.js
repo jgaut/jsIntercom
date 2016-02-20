@@ -2,10 +2,8 @@ var app = require('express')();
 var serverIo = require('http').createServer(app);
 var io = require('socket.io')(serverIo);
 var portIo = 3000;
-
 var HashMap = require('hashmap');
 var map = new HashMap();
-
 var request = require('request');
 var gpio = require('rpi-gpio');
 var async = require('async'); 
@@ -19,11 +17,12 @@ var logger = log4js.getLogger('intercom');
 logger.setLevel('DEBUG');
 
 var PropertiesReader = require('properties-reader');
-var properties = PropertiesReader('properties.file');
+var properties = PropertiesReader('properties.key.file');
+properties.append('properties.file');
 
 logger.debug('Start init!');
 
-
+var isNumeric = require("isnumeric");
 
 io.on('connection', function(socket){
   logger.debug(socket);
@@ -198,9 +197,14 @@ function off() {
     }, 1000);
 };
 
-app.get('/autoopendoor', function(req, res) {
-    dateAuto = new Date(new Date().getTime() + (1000 * 60 * 5));
-    logger.debug('date autoopendoor : ' + dateAuto);
+app.get('/autoopendoor/:open/:duration', function(req, res) {
+    logger.debug('open : '+req.params.open + '; duration : '+req.params.duration);
+    if(!isNumeric(req.params.duration) || !isNumeric(req.params.open) || req.params.open!=0 && req.params.open!=1){
+        logger.debug('Wrong request !'); res.status(404).send('Wrong request !');
+    }else{
+        dateAuto = new Date(new Date().getTime() + (1000 * 60 * req.params.duration));
+        logger.debug('date autoopendoor : ' + dateAuto);
+    }
     res.send();
 });
 

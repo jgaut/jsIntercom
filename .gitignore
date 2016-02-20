@@ -2,4 +2,5 @@
 .AppleDouble/*
 node_modules/*
 nohup.out
-
+key
+*.tmp

@@ -1,4 +1,3 @@
 # contents of properties file
-[main]
-ifttt.key = replaceByIdIFTTT
-ifttt.url = https://maker.ifttt.com/trigger/ringIntercomNotif/with/key/
+[ifttt]
+ifttt.url=https://maker.ifttt.com/trigger/ringIntercomNotif/with/key/

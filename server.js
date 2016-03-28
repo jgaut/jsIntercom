@@ -17,8 +17,7 @@ var logger = log4js.getLogger('intercom');
 logger.setLevel('DEBUG');
 
 var PropertiesReader = require('properties-reader');
-var properties = PropertiesReader('properties.key.file');
-properties.append('properties.file');
+var properties = PropertiesReader('properties.file');)
 
 logger.debug('Start init!');
 
@@ -74,7 +73,7 @@ gpio.on('change', function(channel, value) {
 
             
             logger.debug(dateRef+" < "+dateNow+" ? true");
-    	   request(properties.get('main.ifttt.url')+properties.get('main.ifttt.key'), function (error, response, body) {
+    	   request(properties.get('ifttt.url')+properties.get('ifttt.key'), function (error, response, body) {
   		    if (!error && response.statusCode == 200) {
     			logger.debug(body) // Show the HTML for the Google homepage. 
   			}else{

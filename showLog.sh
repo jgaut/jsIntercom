@@ -1,0 +1,1 @@
+tail -F intercom.log

@@ -17,7 +17,7 @@ var logger = log4js.getLogger('intercom');
 logger.setLevel('DEBUG');
 
 var PropertiesReader = require('properties-reader');
-var properties = PropertiesReader('properties.file');)
+var properties = PropertiesReader('properties.file');
 
 logger.debug('Start init!');
 
@@ -46,10 +46,7 @@ io.on('disconnect', function(){
 
 io.on('opendoor', function(){
   	logger.debug('opendoor');
-  	gpio.write(7, true, function(err) {
-        if (err) throw err;
-        logger.debug('Written to pin');
-    });
+  	opendoor();
 });
 
 serverIo.listen(portIo);
@@ -117,10 +114,11 @@ gpio.on('change', function(channel, value) {
 //| BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
 //+-----+-----+---------+------+---+--B Plus--+---+------+---------+-----+-----+
 
-//Colonne wPi
-var pin7 = 7; //Detection de sonnerie
-var pin16 = 16; //Sortie ouverture porte
-var pin12 = 12; //Entree ouverture porte
+//Colonne Physical
+var pin7 = 7; //Ouverture porte
+var pin16 = 16; //Detection de sonnerie OUT
+var pin12 = 12; //Detection de sonnerie IN
+var pin13 = 13; //Mise hors service interphone classique
 
 //Init des dates
 var dateRef = new Date();
@@ -178,8 +176,9 @@ app.get('/test', function(req, res) {
 });
 
 app.get('/opendoor', function(req, res) {
+    logger.debug('opendoor');
     opendoor();
-    res.send();
+    res.send('OK');
 });
 
 function opendoor(){
@@ -193,18 +192,21 @@ function off() {
     setTimeout(function() {
         gpio.write(pin7, 0, null);
         logger.debug(pin7+" : off");
-    }, 1000);
+    }, 0);
 };
 
-app.get('/autoopendoor/:open/:duration', function(req, res) {
-    logger.debug('open : '+req.params.open + '; duration : '+req.params.duration);
-    if(!isNumeric(req.params.duration) || !isNumeric(req.params.open) || req.params.open!=0 && req.params.open!=1){
+app.get('/autoopendoor/:duration', function(req, res) {
+    logger.debug('autoopendoor => duration : '+req.params.duration);
+    if(!isNumeric(req.params.duration)){
         logger.debug('Wrong request !'); res.status(404).send('Wrong request !');
     }else{
+        //On décale la date d'ouverture auto à now + duration.
         dateAuto = new Date(new Date().getTime() + (1000 * 60 * req.params.duration));
         logger.debug('date autoopendoor : ' + dateAuto);
+        //On met sur silence l'interphone claissque.
+        //TODO
     }
-    res.send();
+    res.send('OK');
 });
 
 logger.debug('End init!');

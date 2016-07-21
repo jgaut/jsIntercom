@@ -3,5 +3,6 @@
 url.ring=https://maker.ifttt.com/trigger/ringIntercomNotif/with/key/
 url.opendoor=https://maker.ifttt.com/trigger/opendoorIntercomNotif/with/key/
 key=
+
 [log]
 level=INFO

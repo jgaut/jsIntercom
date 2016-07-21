@@ -8,7 +8,7 @@ var request = require('request');
 var gpio = require('rpi-gpio');
 var async = require('async'); 
 var log4js = require('log4js');
-//var logger = log4js.getLogger();
+var isNumeric = require("isnumeric");
 
 log4js.loadAppender('file');
 log4js.addAppender(log4js.appenders.file('intercom.log'), 'intercom');
@@ -21,7 +21,7 @@ var properties = PropertiesReader('properties.file');
 
 logger.debug('Start init!');
 
-var isNumeric = require("isnumeric");
+
 
 io.on('connection', function(socket){
   logger.debug(socket);

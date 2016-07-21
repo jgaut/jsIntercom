@@ -54,29 +54,37 @@ serverIo.listen(portIo);
 
 
 gpio.on('change', function(channel, value) {
+
+    //Le canal 12 sert pour la détection de la sonnerie
     if(channel==12 && value){
         logger.debug('Channel ' + channel + ' value is now ' + value);
         dateNow = new Date();
-        if(dateRef<dateNow){
 
-                        //Auto open door
-            logger.debug(dateNow+" < "+dateAuto+" ?");
+        //Protection contre les sonneries trop proches
+        if(dateRef<dateNow){
+            
+            //Auto open door ?
             if(dateNow<dateAuto){
                 opendoor();
-                logger.debug('autoopendoor !');
-            }
-            dateAuto = new Date();
-            logger.debug('reset date autoopendoor : '+dateAuto);
+                logger.debug("autoopendoor: "+dateNow+" < "+dateAuto+" ? true => Open door !");
+                dateAuto = dateNow;
+                logger.debug('reset date autoopendoor : '+dateAuto);
+                switchOn(1000);
+                logger.debug('activation de l interphone classique');
 
-            
-            logger.debug(dateRef+" < "+dateNow+" ? true");
-    	   request(properties.get('ifttt.url')+properties.get('ifttt.key'), function (error, response, body) {
+            }else{
+                logger.debug("autoopendoor: "+dateNow+" < "+dateAuto+" ? false");
+            }
+
+            //Appel du service IFTTT
+    	   request(properties.get('ifttt.url.ring')+properties.get('ifttt.key'), function (error, response, body) {
   		    if (!error && response.statusCode == 200) {
-    			logger.debug(body) // Show the HTML for the Google homepage. 
+    			logger.debug(body) // Show the HTML for the IFTT respons. 
   			}else{
                 logger.debug(error);
             }
 		  });
+
            //Next accepted ring after 5 sec minimum
             dateRef = new Date(new Date().getTime() + (1000 * 5));
 
@@ -95,7 +103,7 @@ gpio.on('change', function(channel, value) {
 //|   3 |   9 |   SCL.1 |   IN | 1 |  5 || 6  |   |      | 0v      |     |     |
 //|   4 |   7 | GPIO. 7 |  OUT | 0 |  7 || 8  | 1 | ALT0 | TxD     | 15  | 14  |
 //|     |     |      0v |      |   |  9 || 10 | 1 | ALT0 | RxD     | 16  | 15  |
-//|  17 |   0 | GPIO. 0 |   IN | 0 | 11 || 12 | 0 | IN   | GPIO. 1 | 1     | 18  |
+//|  17 |   0 | GPIO. 0 |   IN | 0 | 11 || 12 | 0 | IN   | GPIO. 1 | 1   | 18  |
 //|  27 |   2 | GPIO. 2 |   IN | 0 | 13 || 14 |   |      | 0v      |     |     |
 //|  22 |   3 | GPIO. 3 |   IN | 0 | 15 || 16 | 1 | OUT  | GPIO. 4 | 4   | 23  |
 //|     |     |    3.3v |      |   | 17 || 18 | 0 | IN   | GPIO. 5 | 5   | 24  |
@@ -114,12 +122,12 @@ gpio.on('change', function(channel, value) {
 //| BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
 //+-----+-----+---------+------+---+--B Plus--+---+------+---------+-----+-----+
 
-//Colonne Physical
+//Colonne Physical 
 var pin7 = 7; //Ouverture porte
 var pin16 = 16; //Detection de sonnerie OUT
-var pin12 = 12; //Detection de sonnerie IN
+var pin12 = 12; //Detection de sonnerie IN 
 var pin13 = 13; //Mise hors service interphone classique
-
+ 
 //Init des dates
 var dateRef = new Date();
 var dateAuto = new Date();
@@ -127,14 +135,21 @@ var dateNow;
 
 async.parallel([
     function(callback) {
-        gpio.setup(pin7, gpio.DIR_OUT, callback)
+        gpio.setup(pin7, gpio.DIR_OUT, callback);
+        logger.debug('pin7 set OUT');
+    },
+        function(callback) {
+        gpio.setup(pin13, gpio.DIR_OUT, callback);
+        logger.debug('pin13 set OUT');
     },
     function(callback) {
-        gpio.setup(pin16, gpio.DIR_OUT, callback)
+        gpio.setup(pin16, gpio.DIR_OUT, callback);
+        logger.debug('pin16 set OUT');
     },
     function(callback) {
         //Ecoute pour la sonnerie
-        gpio.setup(pin12, gpio.DIR_IN, gpio.EDGE_BOTH, callback)
+        gpio.setup(pin12, gpio.DIR_IN, gpio.EDGE_BOTH, callback);
+        logger.debug('pin12 set IN');
     }
 ], function(err, results) {
     logger.debug('Pins set up');
@@ -146,6 +161,10 @@ function write() {
         function(callback) {
             delayedWrite(pin7, false, callback);
             logger.debug('write pin7 false');
+        },
+        function(callback) {
+            delayedWrite(pin13, false, callback);
+            logger.debug('write pin13 false');
         },
         function(callback) {
             delayedWrite(pin16, true, callback);
@@ -161,7 +180,6 @@ function write() {
 function delayedWrite(pin, value, callback) {
     setTimeout(function() {
         gpio.write(pin, value, callback);
-	   //logger.debug(pin);
     }, 5000);
 };
 
@@ -183,17 +201,39 @@ app.get('/opendoor', function(req, res) {
 
 function opendoor(){
     setTimeout(function() {
-        gpio.write(pin7, 1, off);
-        logger.debug(pin7+" : on");
+        gpio.write(pin7, 1, closedoor);
+        logger.debug(pin7+" : opendoor");
     }, 1000);
 }
 
-function off() {
+function closedoor() {
     setTimeout(function() {
         gpio.write(pin7, 0, null);
-        logger.debug(pin7+" : off");
-    }, 0);
+        logger.debug(pin7+" : closedoor");
+        //Appel du service IFTTT
+        request(properties.get('ifttt.url.opendoor')+properties.get('ifttt.key'), function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                logger.debug(body) // Show the HTML for the IFTT response. 
+            }else{
+                logger.debug(error);
+            }
+        });
+    }, 1000);
 };
+
+function switchOff(duration){
+    setTimeout(function() {
+        gpio.write(pin13, 1, switchOn(duration));
+        logger.debug(pin13+" : switchOff");
+    }, 1000);
+}
+
+function switchOn(duration){
+    setTimeout(function() {
+        gpio.write(pin13, 0, null);
+        logger.debug(pin13+" : switchOn");
+    }, duration);
+}
 
 app.get('/autoopendoor/:duration', function(req, res) {
     logger.debug('autoopendoor => duration : '+req.params.duration);
@@ -201,10 +241,12 @@ app.get('/autoopendoor/:duration', function(req, res) {
         logger.debug('Wrong request !'); res.status(404).send('Wrong request !');
     }else{
         //On décale la date d'ouverture auto à now + duration.
-        dateAuto = new Date(new Date().getTime() + (1000 * 60 * req.params.duration));
+        var duration = 1000 * 60 * req.params.duration;
+        dateAuto = new Date(new Date().getTime() + (duration));
         logger.debug('date autoopendoor : ' + dateAuto);
-        //On met sur silence l'interphone claissque.
-        //TODO
+        //On met sur silence l'interphone classique.
+        logger.debug('interphone classique sous silence pour ' + duration +' ms');
+        switchOff(duration);
     }
     res.send('OK');
 });

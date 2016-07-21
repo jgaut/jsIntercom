@@ -1,1 +1,1 @@
-properties.file filter=gitignore
+*.file filter=ignoreKey

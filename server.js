@@ -18,6 +18,7 @@ logger.setLevel('DEBUG');
 
 var PropertiesReader = require('properties-reader');
 var properties = PropertiesReader('properties.file');
+logger.setLevel(roperties.get('log.level'));
 
 logger.debug('Start init!');
 

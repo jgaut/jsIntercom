@@ -19,7 +19,7 @@ var logger = log4js.getLogger('intercom');
 logger.setLevel('DEBUG');
 
 var properties = PropertiesReader('properties.file');
-logger.setLevel(roperties.get('log.level'));
+logger.setLevel(properties.get('log.level'));
 
 logger.debug('Start init!');
 

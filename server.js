@@ -1,5 +1,6 @@
-var app = require('express').createServer();
-var io = require('socket.io')(app);
+var app = require('express')();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
 var port = 8080;
 
 var HashMap = require('hashmap');
@@ -50,7 +51,7 @@ io.on('opendoor', function(){
   	opendoor();
 });
 
-app.listen(port);
+server.listen(port);
 
 gpio.on('change', function(channel, value) {
 

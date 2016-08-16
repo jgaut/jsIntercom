@@ -1,7 +1,7 @@
-var app = require('express')();
-var serverIo = require('http').createServer(app);
-var io = require('socket.io')(serverIo);
-var portIo = 3000;
+var app = require('express').createServer();
+var io = require('socket.io')(app);
+var port = 8080;
+
 var HashMap = require('hashmap');
 var map = new HashMap();
 var request = require('request');
@@ -9,6 +9,7 @@ var gpio = require('rpi-gpio');
 var async = require('async'); 
 var log4js = require('log4js');
 var isNumeric = require("isnumeric");
+var PropertiesReader = require('properties-reader');
 
 log4js.loadAppender('file');
 log4js.addAppender(log4js.appenders.file('intercom.log'), 'intercom');
@@ -16,7 +17,6 @@ log4js.addAppender(log4js.appenders.file('intercom.log'), 'intercom');
 var logger = log4js.getLogger('intercom');
 logger.setLevel('DEBUG');
 
-var PropertiesReader = require('properties-reader');
 var properties = PropertiesReader('properties.file');
 logger.setLevel(roperties.get('log.level'));
 
@@ -50,9 +50,7 @@ io.on('opendoor', function(){
   	opendoor();
 });
 
-serverIo.listen(portIo);
-//logger.debug(serverIo);
-
+app.listen(port);
 
 gpio.on('change', function(channel, value) {
 

@@ -16,7 +16,7 @@ log4js.loadAppender('file');
 log4js.addAppender(log4js.appenders.file('intercom.log'), 'intercom');
  
 var logger = log4js.getLogger('intercom');
-logger.setLevel('DEBUG');
+//logger.setLevel('DEBUG');
 
 var properties = PropertiesReader('properties.file');
 logger.setLevel(properties.get('log.level'));

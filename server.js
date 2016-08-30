@@ -18,8 +18,10 @@ log4js.addAppender(log4js.appenders.file('intercom.log'), 'intercom');
 var logger = log4js.getLogger('intercom');
 //logger.setLevel('DEBUG');
 
-var properties = PropertiesReader('properties.file');
-logger.setLevel(properties.get('log.level'));
+var propertiesFile = PropertiesReader('properties.file');
+logger.setLevel(propertiesFile.get('log.level'));
+
+var keyFile = PropertiesReader('key.file');
 
 logger.debug('Start init!');
 
@@ -77,7 +79,7 @@ gpio.on('change', function(channel, value) {
             }
 
             //Appel du service IFTTT
-    	   request(properties.get('ifttt.url.ring')+properties.get('ifttt.key'), function (error, response, body) {
+    	   request(propertiesFile.get('ifttt.url.ring')+keyFile.get('ifttt.key'), function (error, response, body) {
   		    if (!error && response.statusCode == 200) {
     			logger.debug(body) // Show the HTML for the IFTT respons. 
   			}else{
@@ -211,7 +213,7 @@ function closedoor() {
         gpio.write(pin7, 0, null);
         logger.debug(pin7+" : closedoor");
         //Appel du service IFTTT
-        request(properties.get('ifttt.url.opendoor')+properties.get('ifttt.key'), function (error, response, body) {
+        request(propertiesFile.get('ifttt.url.opendoor')+keyFile.get('ifttt.key'), function (error, response, body) {
             if (!error && response.statusCode == 200) {
                 logger.debug(body) // Show the HTML for the IFTT response. 
             }else{

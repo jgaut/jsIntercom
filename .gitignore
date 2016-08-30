@@ -5,3 +5,4 @@ nohup.out
 key
 *.tmp
 *.sync
+properties.file

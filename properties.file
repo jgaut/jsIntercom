@@ -1,8 +1,7 @@
 # contents of properties file
 [ifttt]
-url.ring=https://maker.ifttt.com/trigger/ringIntercomNotif/with/key/
-url.opendoor=https://maker.ifttt.com/trigger/opendoorIntercomNotif/with/key/
-key=cRY4eknJmi0dHdN7egeyLE
+url.ring=https://maker.ifttt.com/trigger/ring/with/key/
+url.opendoor=https://maker.ifttt.com/trigger/opendoor/with/key/
 
 [log]
 level=DEBUG

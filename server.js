@@ -33,7 +33,7 @@ io.on('connection', function(socket){
 
 io.on('disconnect', function(){
 	logger.debug('socket server disconnect');
-});
+});        
 
 //socket.emit('whoami', { id: id, name: nameT.value, lieu: locationT.value, role: 'T' });
 /*socket.on('whoami', function(data){
@@ -123,11 +123,11 @@ gpio.on('change', function(channel, value) {
 //+-----+-----+---------+------+---+--B Plus--+---+------+---------+-----+-----+
 
 //Colonne Physical 
-var pin7 = 7; //Ouverture porte
+var pin7 = 7; //Ouverture porte -> DIP05-2A72-21D
 var pin16 = 16; //Detection de sonnerie OUT
 var pin12 = 12; //Detection de sonnerie IN 
-var pin13 = 13; //Mise hors service interphone classique
- 
+var pin13 = 13; //Mise hors service interphone classique -> DIP05-1C90-51D
+
 //Init des dates
 var dateRef = new Date();
 var dateAuto = new Date();

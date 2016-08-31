@@ -5,3 +5,5 @@ nohup.out
 key
 *.tmp
 *.sync
+key.file
+

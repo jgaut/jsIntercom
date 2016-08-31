@@ -180,8 +180,8 @@ function write() {
         }
     ], function(err, results) {
         logger.debug('Writes complete');
-        logger.debug(err);
-        logger.debug(results);
+        logger.debug("Error : "+err);
+        logger.debug("Results "+results);
     });
 };
  

@@ -78,14 +78,7 @@ gpio.on('change', function(channel, value) {
                 logger.debug("autoopendoor: "+dateNow+" < "+dateAuto+" ? false");
             }
 
-            //Appel du service IFTTT
-    	   request(propertiesFile.get('ifttt.url.ring')+keyFile.get('ifttt.key'), function (error, response, body) {
-  		    if (!error && response.statusCode == 200) {
-    			logger.debug(body) // Show the HTML for the IFTT respons. 
-  			}else{
-                logger.debug(error);
-            }
-		  });
+            ring();
 
            //Next accepted ring after 5 sec minimum
             dateRef = new Date(new Date().getTime() + (1000 * 5));
@@ -96,6 +89,19 @@ gpio.on('change', function(channel, value) {
         }
 	} 
 });
+
+function ring(){
+    //Appel du service IFTTT
+   logger.debug("Call IFTTT Channel Maker 'ring'");
+   logger.debug(propertiesFile.get('ifttt.url.ring')+keyFile.get('ifttt.key'));
+    request(propertiesFile.get('ifttt.url.ring')+keyFile.get('ifttt.key'), function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            logger.debug(body) // Show the HTML for the IFTT respons. 
+        }else{
+            logger.debug(error);
+        }
+    });
+};
 
 //+-----+-----+---------+------+---+--B Plus--+---+------+---------+-----+-----+
 //| BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
@@ -201,6 +207,12 @@ app.get('/opendoor', function(req, res) {
     res.send('OK');
 });
 
+app.get('/ring', function(req, res) {
+    logger.debug('ring');
+    ring();
+    res.send('OK');
+});
+
 function opendoor(){
     setTimeout(function() {
         gpio.write(pin7, 1, closedoor);
@@ -213,6 +225,8 @@ function closedoor() {
         gpio.write(pin7, 0, null);
         logger.debug(pin7+" : closedoor");
         //Appel du service IFTTT
+        logger.debug("Call IFTTT Channel Maker 'opendoor'");
+        logger.debug(propertiesFile.get('ifttt.url.opendoor')+keyFile.get('ifttt.key'));
         request(propertiesFile.get('ifttt.url.opendoor')+keyFile.get('ifttt.key'), function (error, response, body) {
             if (!error && response.statusCode == 200) {
                 logger.debug(body) // Show the HTML for the IFTT response. 

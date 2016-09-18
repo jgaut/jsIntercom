@@ -5,3 +5,7 @@ url.opendoor=https://maker.ifttt.com/trigger/opendoor/with/key/
 
 [log]
 level=DEBUG
+
+[sound]
+recordDuration=10
+directory=sound

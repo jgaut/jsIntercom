@@ -12,6 +12,12 @@ var log4js = require('log4js');
 var isNumeric = require("isnumeric");
 var PropertiesReader = require('properties-reader');
 
+var exec = require('child_process').exec;
+var cmd = 'arecord -f dat -D plughw:1,0 -d';
+
+var dateFormat = require('dateformat');
+var mkdirp = require('mkdirp');
+
 log4js.loadAppender('file');
 log4js.addAppender(log4js.appenders.file('intercom.log'), 'intercom');
  
@@ -25,7 +31,9 @@ var keyFile = PropertiesReader('key.file');
 
 logger.debug('Start init!');
 
-
+mkdirp(propertiesFile.get('sound.directory'), function(err) { 
+    logger.debug(err);
+});
 
 io.on('connection', function(socket){
   logger.debug(socket);
@@ -80,8 +88,8 @@ gpio.on('change', function(channel, value) {
 
             ring();
 
-           //Next accepted ring after 5 sec minimum
-            dateRef = new Date(new Date().getTime() + (1000 * 5));
+           //Next accepted ring after n sec minimum
+            dateRef = new Date(new Date().getTime() + (1000 * (propertiesFile.get('sound.recordDuration')+1));
 
 
         }else{
@@ -91,6 +99,9 @@ gpio.on('change', function(channel, value) {
 });
 
 function ring(){
+    //Lancement de l'enregistrement
+    record(propertiesFile.get('sound.recordDuration'));
+
     //Appel du service IFTTT
    logger.debug("Call IFTTT Channel Maker 'ring'");
    logger.debug(propertiesFile.get('ifttt.url.ring')+keyFile.get('ifttt.key'));
@@ -201,6 +212,15 @@ app.get('/test', function(req, res) {
     res.send('OK');
 });
 
+app.get('/testRecord', function(req, res) {
+    exec(cmd + dateFormat(new Date(), 'yyyymmddhhMMss')+'.wav', function(error, stdout, stderr) {
+        logger.debug(stdout);
+        logger.debug(stderr);
+        logger.debug(error);
+        res.send(stdout);
+    });
+});
+
 app.get('/opendoor', function(req, res) {
     logger.debug('opendoor');
     opendoor();
@@ -249,6 +269,15 @@ function switchOn(duration){
         gpio.write(pin13, 0, null);
         logger.debug(pin13+" : switchOn");
     }, duration);
+}
+
+function record(duration){
+    logger.debug('Tentative d enregistrement');
+    exec(cmd + ' ' + duration + ' ' + propertiesFile.get('sound.directory') + '/' + dateFormat(new Date(), 'yyyymmddhhMMss')+'.wav', function(error, stdout, stderr) {
+        logger.debug(stdout);
+        logger.debug(stderr);
+        logger.debug(error);
+    });
 }
 
 app.get('/autoopendoor/:duration', function(req, res) {

@@ -91,7 +91,7 @@ gpio.on('change', function(channel, value) {
             ring();
 
            //Next accepted ring after n sec minimum
-            dateRef = new Date(new Date().getTime() + (1000 * (propertiesFile.get('sound.recordDuration')+1));
+            dateRef = new Date(new Date().getTime() + (1000 * (propertiesFile.get('sound.recordDuration')+1)));
 
 
         }else{

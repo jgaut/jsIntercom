@@ -1,4 +1,7 @@
 # contents of properties file
+[basic]
+port=5000
+
 [ifttt]
 url.ring=https://maker.ifttt.com/trigger/ring/with/key/
 url.opendoor=https://maker.ifttt.com/trigger/opendoor/with/key/

@@ -3,12 +3,21 @@
 port=5000
 
 [ifttt]
+flag=true
 url.ring=https://maker.ifttt.com/trigger/ring/with/key/
 url.opendoor=https://maker.ifttt.com/trigger/opendoor/with/key/
 
 [log]
 level=DEBUG
 
-[sound]
-recordDuration=10
-directory=sound
+[record]
+flag=true
+duration=10
+directory=record
+
+
+[ring]
+minBtw2ring=15
+
+[autoopendoor]
+flag=true

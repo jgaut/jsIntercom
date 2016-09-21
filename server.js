@@ -13,7 +13,8 @@ var isNumeric = require("isnumeric");
 var PropertiesReader = require('properties-reader');
 
 var exec = require('child_process').exec;
-var cmd = 'arecord -f dat -D plughw:1,0 -d';
+var cmdRecord = 'arecord -f dat -D plughw:1,0 -d';
+var ringFlag=0;
 
 var dateFormat = require('dateformat');
 var mkdirp = require('mkdirp');
@@ -31,7 +32,7 @@ var keyFile = PropertiesReader('key.file');
 
 logger.debug('Start init!');
 
-mkdirp(propertiesFile.get('sound.directory'), function(err) { 
+mkdirp(propertiesFile.get('record.directory'), function(err) { 
     logger.debug(err);
 });
 
@@ -70,50 +71,63 @@ gpio.on('change', function(channel, value) {
     //Le canal 12 sert pour la détection de la sonnerie
     if(channel==12 && value){
         logger.debug('Channel ' + channel + ' value is now ' + value);
-        dateNow = new Date();
-
+        
         //Protection contre les sonneries trop proches
-        if(dateRef<dateNow){
-            
-            //Auto open door ?
-            if(dateNow<dateAuto){
-                opendoor();
-                logger.debug("autoopendoor: "+dateNow+" < "+dateAuto+" ? true => Open door !");
-                dateAuto = dateNow;
-                logger.debug('reset date autoopendoor : '+dateAuto);
-                switchOn(1000);
-                logger.debug('activation de l interphone classique');
+        //if(dateRef<dateNow){
+        if(ringFlag==0){
 
-            }else{
-                logger.debug("autoopendoor: "+dateNow+" < "+dateAuto+" ? false");
-            }
+            //Verrouillage du traitement de l'appel
+            ringFlag=1;
 
+            //Appel de la fonction de gestion de la sonnerie
             ring();
 
-           //Next accepted ring after n sec minimum
-            dateRef = new Date(new Date().getTime() + (1000 * (propertiesFile.get('sound.recordDuration')+1)));
-
+            setTimeout(
+            	function() {
+		        	ringFlag=0;
+		    	}, propertiesFile.get('ring.minBtw2ring')
+		    );
 
         }else{
             //logger.debug("false");
         }
-	} 
+	} else if(channel==12 && !value && ringFlag==1){
+		//Lancement de l'enregistrement
+    	if(propertiesFile.get('record.flag')){
+    		record(propertiesFile.get('record.duration'));
+    	}
+	}
 });
 
 function ring(){
-    //Lancement de l'enregistrement
-    record(propertiesFile.get('sound.recordDuration'));
 
-    //Appel du service IFTTT
-   logger.debug("Call IFTTT Channel Maker 'ring'");
-   logger.debug(propertiesFile.get('ifttt.url.ring')+keyFile.get('ifttt.key'));
-    request(propertiesFile.get('ifttt.url.ring')+keyFile.get('ifttt.key'), function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            logger.debug(body) // Show the HTML for the IFTT respons. 
-        }else{
-            logger.debug(error);
-        }
-    });
+	//Auto open door
+	if(propertiesFile.get('autoopendoor.flag')){
+		dateNow = new Date();
+	    if(dateNow<dateAuto){
+	        opendoor();
+	        logger.debug("autoopendoor: "+dateNow+" < "+dateAuto+" ? true => Open door !");
+	        dateAuto = dateNow;
+	        logger.debug('reset date autoopendoor : '+dateAuto);
+	        switchOn(1000);
+	        logger.debug('activation de l interphone classique');
+	    }else{
+	        logger.debug("autoopendoor: "+dateNow+" < "+dateAuto+" ? false");
+	    }
+	}
+    
+   //Appel du service IFTTT
+   if(propertiesFile.get('ifttt.flag')){
+	   logger.debug("Call IFTTT Channel Maker 'ring'");
+	   logger.debug(propertiesFile.get('ifttt.url.ring')+keyFile.get('ifttt.key'));
+	    request(propertiesFile.get('ifttt.url.ring')+keyFile.get('ifttt.key'), function (error, response, body) {
+	        if (!error && response.statusCode == 200) {
+	            logger.debug(body) // Show the HTML for the IFTT respons. 
+	        }else{
+	            logger.debug(error);
+	        }
+	    });
+	}
 };
 
 //+-----+-----+---------+------+---+--B Plus--+---+------+---------+-----+-----+
@@ -150,7 +164,7 @@ var pin12 = 12; //Detection de sonnerie IN
 var pin13 = 13; //Mise hors service interphone classique -> DIP05-1C90-51D
 
 //Init des dates
-var dateRef = new Date();
+//var dateRef = new Date();
 var dateAuto = new Date();
 var dateNow;
 
@@ -215,12 +229,8 @@ app.get('/test', function(req, res) {
 });
 
 app.get('/testRecord', function(req, res) {
-    exec(cmd + dateFormat(new Date(), 'yyyymmddhhMMss')+'.wav', function(error, stdout, stderr) {
-        logger.debug(stdout);
-        logger.debug(stderr);
-        logger.debug(error);
-        res.send(stdout);
-    });
+	record(10);
+	res.send('OK');
 });
 
 app.get('/opendoor', function(req, res) {
@@ -275,7 +285,7 @@ function switchOn(duration){
 
 function record(duration){
     logger.debug('Tentative d enregistrement');
-    exec(cmd + ' ' + duration + ' ' + propertiesFile.get('sound.directory') + '/' + dateFormat(new Date(), 'yyyymmddhhMMss')+'.wav', function(error, stdout, stderr) {
+    exec(cmdRecord + ' ' + duration + ' ' + propertiesFile.get('record.directory') + '/' + dateFormat(new Date(), 'yyyymmddhhMMss')+'.wav', function(error, stdout, stderr) {
         logger.debug(stdout);
         logger.debug(stderr);
         logger.debug(error);

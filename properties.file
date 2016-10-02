@@ -12,7 +12,7 @@ level=DEBUG
 
 [record]
 flag=true
-duration=10
+duration=30
 directory=record
 
 

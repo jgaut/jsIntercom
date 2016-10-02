@@ -39,14 +39,16 @@ mkdirp(propertiesFile.get('record.directory'), function(err) {
 var port = propertiesFile.get('basic.port');
 
 io.on('connection', function(socket){
-  logger.debug(socket);
-  logger.debug('connection !');
-});
-
-
-io.on('disconnect', function(){
-	logger.debug('socket server disconnect');
-});        
+    //logger.debug(socket);
+    logger.debug('io connection');
+    socket.on('message', function (data) {
+        logger.debug(data);
+    });
+    socket.on('disconnect', function () {
+        io.emit('user disconnected');
+        logger.debug('disconnect');
+    });
+});      
 
 //socket.emit('whoami', { id: id, name: nameT.value, lieu: locationT.value, role: 'T' });
 /*socket.on('whoami', function(data){
@@ -59,40 +61,33 @@ io.on('disconnect', function(){
     io.emit('list',map);
   });*/
 
-io.on('opendoor', function(){
-  	logger.debug('opendoor');
-  	opendoor();
-});
-
 server.listen(port);
 
 gpio.on('change', function(channel, value) {
 
+    logger.debug('Channel ' + channel + ' value is now ' + value);
     //Le canal 12 sert pour la détection de la sonnerie
-    if(channel==12 && value){
-        logger.debug('Channel ' + channel + ' value is now ' + value);
+    if(channel==12 && value && ringFlag==0){
         
         //Protection contre les sonneries trop proches
         //if(dateRef<dateNow){
-        if(ringFlag==0){
 
-            //Verrouillage du traitement de l'appel
-            ringFlag=1;
+        //Verrouillage du traitement de l'appel
+        ringFlag=1;
 
-            //Appel de la fonction de gestion de la sonnerie
-            ring();
+        //Appel de la fonction de gestion de la sonnerie
+        ring();
 
-            setTimeout(
-            	function() {
-		        	ringFlag=0;
-		    	}, propertiesFile.get('ring.minBtw2ring')
-		    );
+        setTimeout(
+        	function() {
+	        	ringFlag=0;
+	    	}, propertiesFile.get('ring.minBtw2ring')*1000
+	    );
 
-        }else{
-            //logger.debug("false");
-        }
 	} else if(channel==12 && !value && ringFlag==1){
-		//Lancement de l'enregistrement
+		//Verrouillage de l'enregistrement
+        ringFlag=2;
+        //Lancement de l'enregistrement
     	if(propertiesFile.get('record.flag')){
     		record(propertiesFile.get('record.duration'));
     	}
@@ -128,6 +123,9 @@ function ring(){
 	        }
 	    });
 	}
+
+    //Appel des smartphones
+    socket.emit('ring', '');
 };
 
 //+-----+-----+---------+------+---+--B Plus--+---+------+---------+-----+-----+

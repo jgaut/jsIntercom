@@ -7,4 +7,5 @@ key
 *.sync
 sound/*
 */.AppleDouble/*
+uv4l/libserver.so
 

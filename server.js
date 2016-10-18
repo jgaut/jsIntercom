@@ -37,16 +37,17 @@ mkdirp(propertiesFile.get('record.directory'), function(err) {
 });
 
 var port = propertiesFile.get('basic.port');
+var soc;
 
 io.on('connection', function(socket){
     //logger.debug(socket);
+    soc=socket;
     logger.debug('io connection');
-    socket.on('message', function (data) {
-        logger.debug(data);
+    soc.on('message', function (data) {
+        logger.debug('message :'+data);
     });
-    socket.on('disconnect', function () {
-        io.emit('user disconnected');
-        logger.debug('disconnect');
+    soc.on('disconnect', function () {
+        logger.debug('io disconnection');
     });
 });      
 
@@ -65,7 +66,7 @@ server.listen(port);
 
 gpio.on('change', function(channel, value) {
 
-    logger.debug('Channel ' + channel + ' value is now ' + value);
+    logger.debug('Channel ' + channel + ' = ' + value +' & ringFlag = '+ringFlag);
     //Le canal 12 sert pour la détection de la sonnerie
     if(channel==12 && value && ringFlag==0){
         
@@ -96,6 +97,9 @@ gpio.on('change', function(channel, value) {
 
 function ring(){
 
+    //Appel des smartphones
+    soc.emit('ring', '');
+
 	//Auto open door
 	if(propertiesFile.get('autoopendoor.flag')){
 		dateNow = new Date();
@@ -124,8 +128,6 @@ function ring(){
 	    });
 	}
 
-    //Appel des smartphones
-    socket.emit('ring', '');
 };
 
 //+-----+-----+---------+------+---+--B Plus--+---+------+---------+-----+-----+
@@ -223,6 +225,7 @@ app.get('/wines/:id', function(req, res) {
 */
 
 app.get('/test', function(req, res) {
+    logger.debug('test');
     res.send('OK');
 });
 

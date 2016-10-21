@@ -224,10 +224,14 @@ app.get('/wines/:id', function(req, res) {
 });
 */
 
-app.get('/test', function(req, res) {
-    logger.debug('test');
-    res.send('OK');
-});
+ /* serves main page */
+app.get("/", function(req, res) {
+    res.sendfile('uv4l/index.html')
+ });
+
+app.get("/js/gyronorm.js", function(req, res) {
+    res.sendfile('uv4l/js/gyronorm.js')
+ });
 
 app.get('/testRecord', function(req, res) {
 	record(10);

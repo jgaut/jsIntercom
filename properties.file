@@ -21,3 +21,7 @@ minBtw2ring=15
 
 [autoopendoor]
 flag=true
+
+[ssl]
+key=
+crt=server.crt

@@ -5,10 +5,15 @@
         <title>UV4L WebRTC</title>
         <!--script src="https://raw.githubusercontent.com/dorukeker/gyronorm.js/master/dist/gyronorm.complete.min.js" async></script-->
         <script src="js/gyronorm.js" async=""></script>
+<script
+              src="https://code.jquery.com/jquery-3.1.1.min.js"
+              integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+              crossorigin="anonymous"></script>
         <script type="text/javascript">
-            var signalling_server_hostname = location.hostname || "192.168.1.56";
-            var signalling_server_address = signalling_server_hostname + ':' + (location.port || 80);
+            var signalling_server_hostname = location.hostname || "88.166.207.71";
+            var signalling_server_address = signalling_server_hostname + ':' + (8080);
             var isFirefox = typeof InstallTrigger !== 'undefined';// Firefox 1.0+
+            var pcConfig;
 
             addEventListener("DOMContentLoaded", function() {
                 document.getElementById('signalling_server').value = signalling_server_address;
@@ -20,10 +25,40 @@
                     document.getElementById('cast_application').disabled = true;
                     document.getElementById('note2').style.display = "none";
                     document.getElementById('note4').style.display = "none";
+                    document.getElementById('cast_mic').checked = true;
+                    document.getElementById('controls').hidden = true;
+                    document.getElementById('container').hidden = true;
+                    
                 } else {
                     document.getElementById('note1').style.display = "none";
                     document.getElementById('note3').style.display = "none";
                 }
+
+           
+    
+    $.ajax({
+          url: 'https://service.xirsys.com/ice',
+          data: {
+            ident: 'jgaut',
+            secret: '4df583aa-809a-11e5-b3fc-c3392fdb5bf9',
+            domain: 'www.jgaut.com',
+            application: 'default',
+            room: 'default',
+            secure: 1
+          },
+          success: function (data, status) {
+            pcConfig = data.d;
+            console.log(data);
+            singleselection('audio_cast', 'cast_mic');
+            //start();
+          },
+          error: function (data, status) {
+            custom='';
+            console.log('Error to get ICE Server');
+          },
+          async: true
+      });
+                
             });
 
             var ws = null;
@@ -33,9 +68,9 @@
             var audio_video_stream;
             var recorder = null;
             var recordedBlobs;
-            var pcConfig = {"iceServers": [
+            /*var pcConfig = {"iceServers": [
                     {"urls": ["stun:stun.l.google.com:19302", "stun:" + signalling_server_hostname + ":3478"]}
-                ]};
+                ]};*/
             var pcOptions = {
                 optional: [
                     // Deprecated:

@@ -1,34 +1,38 @@
 var app = require('express')();
-var server = require('http').createServer(app);
-var io = require('socket.io')(server);
-
-
+var https = require('https');
+var io = require('socket.io')(https);
 var HashMap = require('hashmap');
-var map = new HashMap();
 var request = require('request');
 var gpio = require('rpi-gpio');
 var async = require('async'); 
 var log4js = require('log4js');
 var isNumeric = require("isnumeric");
 var PropertiesReader = require('properties-reader');
-
+var fs = require('fs');
 var exec = require('child_process').exec;
-var cmdRecord = 'arecord -f dat -D plughw:1,0 -d';
-var ringFlag=0;
-
 var dateFormat = require('dateformat');
 var mkdirp = require('mkdirp');
+
+var map = new HashMap();
+var cmdRecord = 'arecord -f dat -D plughw:1,0 -d';
+var ringFlag=0;
 
 log4js.loadAppender('file');
 log4js.addAppender(log4js.appenders.file('intercom.log'), 'intercom');
  
 var logger = log4js.getLogger('intercom');
-//logger.setLevel('DEBUG');
-
 var propertiesFile = PropertiesReader('properties.file');
 logger.setLevel(propertiesFile.get('log.level'));
-
+var port = propertiesFile.get('basic.port');
 var keyFile = PropertiesReader('key.file');
+
+var privateKey  = fs.readFileSync(propertiesFile.get('ssl.key'));
+var certificate = fs.readFileSync(propertiesFile.get('ssl.crt'));
+var credentials = { key: privateKey, cert: certificate };
+credentials.agent = new https.Agent(credentials);
+https.createServer(credentials, app).listen(port, function(){
+    logger.log('Server open on port '+ port);
+});
 
 logger.debug('Start init!');
 
@@ -36,7 +40,7 @@ mkdirp(propertiesFile.get('record.directory'), function(err) {
     logger.debug(err);
 });
 
-var port = propertiesFile.get('basic.port');
+
 var soc;
 
 io.on('connection', function(socket){
@@ -62,7 +66,7 @@ io.on('connection', function(socket){
     io.emit('list',map);
   });*/
 
-server.listen(port);
+//https.listen(port);
 
 gpio.on('change', function(channel, value) {
 

@@ -125,7 +125,7 @@ function ring(){
 	   logger.debug(propertiesFile.get('ifttt.url.ring')+keyFile.get('ifttt.key'));
 	    request(propertiesFile.get('ifttt.url.ring')+keyFile.get('ifttt.key'), function (error, response, body) {
 	        if (!error && response.statusCode == 200) {
-	            logger.debug(body) // Show the HTML for the IFTT respons. 
+	            logger.debug(body) // Show the HTML for the IFTTT respons. 
 	        }else{
 	            logger.debug(error);
 	        }

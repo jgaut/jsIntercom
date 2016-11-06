@@ -102,7 +102,9 @@ gpio.on('change', function(channel, value) {
 function ring(){
 
     //Appel des smartphones
-    soc.emit('ring', '');
+    if(soc){
+        soc.emit('ring', '');
+    }
 
 	//Auto open door
 	if(propertiesFile.get('autoopendoor.flag')){

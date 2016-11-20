@@ -1,2 +1,3 @@
 pkill uv4l
-uv4l --driver dummy --auto-video_nr –bind-host-address 0.0.0.0 --server-option=--enable-webrtc-video=0 –webrtc-echo-cancellation=1 –webrtc-stun-urls=stun:turn01.uswest.xirsys.com
+sleep 1
+uv4l --config-file=uv4l-uvc.conf

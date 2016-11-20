@@ -57,7 +57,8 @@
             console.log('Error to get ICE Server');
           },
           async: true
-      });
+      }
+      );
                 
             });
 
@@ -178,7 +179,7 @@
                     document.documentElement.style.cursor ='wait';
                     server = document.getElementById("signalling_server").value.toLowerCase();
 
-                    var protocol = location.protocol === "https:" ? "ws:" : "ws:";
+                    var protocol = location.protocol === "https:" ? "wss:" : "ws:";
                     ws = new WebSocket(protocol + '//' + server + '/stream/webrtc');
 
                     function offer(stream) {
@@ -737,13 +738,6 @@
         </style>
     </head>
     <body>
-        <h1>
-            <span>WebRTC two-way Audio/Video Intercom &amp; Recorder</span>
-        </h1>
-        <h3 style="color:red">
-            <span>WARNING! Some browsers no longer allow sharing media on insecure origins.</span>
-            <span>Consider switching the UV4L Streaming Server to secure HTTPS instead.</span>
-        </h3>
         <div id="container">
             <div class="overlayWrapper">
                 <video id="remote-video" autoplay="autoplay" width="640" height="480">

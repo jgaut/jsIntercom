@@ -232,11 +232,12 @@ app.get('/wines/:id', function(req, res) {
 
  /* serves main page */
 app.get("/", function(req, res) {
-    res.sendfile('uv4l/index.html')
+    logger.debug('uv4l/index.html');
+    res.sendfile('uv4l/index.html');
  });
 
 app.get("/js/gyronorm.js", function(req, res) {
-    res.sendfile('uv4l/js/gyronorm.js')
+    res.sendfile('uv4l/js/gyronorm.js');
  });
 
 app.get('/testRecord', function(req, res) {
